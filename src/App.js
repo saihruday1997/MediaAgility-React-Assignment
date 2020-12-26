@@ -8,16 +8,23 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, TextField } from "@material-ui/core";
 import TablePagination from "@material-ui/core/TablePagination";
 
 export default function App() {
   const [data, setData] = useState([]);
-  const [page, setPage] = React.useState(0);
+  const [page, setPage] = useState(0);
   const rowsPerPage = 5;
+
+  const [searchText, setSearchText] = useState("");
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
+  };
+
+  const handleChange = (event) => {
+    let text = event.target.value;
+    setSearchText(text);
   };
 
   useEffect(() => {
@@ -43,16 +50,31 @@ export default function App() {
     fetchData();
   }, []);
 
-  const useStyles = makeStyles({
+  const useStyles = makeStyles((theme) => ({
     table: {
       minWidth: 650
+    },
+    root: {
+      "& > *": {
+        margin: theme.spacing(1),
+        width: "25ch"
+      }
     }
-  });
+  }));
 
   const classes = useStyles();
 
   return (
     <div className="App">
+      <form className={classes.root} noValidate autoComplete="off">
+        <TextField
+          id="outlined-basic"
+          label="Search a city"
+          variant="outlined"
+          onChange={(e) => handleChange(e)}
+        />
+      </form>
+
       <TableContainer component={Paper}>
         <Table className={classes.table} aria-label="simple table">
           <TableHead>
@@ -69,6 +91,17 @@ export default function App() {
           </TableHead>
           <TableBody>
             {data
+              .filter((el) => {
+                if (searchText === "") {
+                  return el;
+                }
+
+                if (el.name.toLowerCase().includes(searchText.toLowerCase())) {
+                  return el;
+                }
+
+                return null;
+              })
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((el) => (
                 <TableRow key={el.id}>
